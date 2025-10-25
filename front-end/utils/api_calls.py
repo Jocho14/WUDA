@@ -10,6 +10,7 @@ class Login(BaseModel):
     username: str
     password: str
 
+
 class RegisterUser(Login):
     email: EmailStr
     repeat_pwd: str
