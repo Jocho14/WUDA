@@ -23,12 +23,19 @@ class PostDetails(Resource):
         else:
             return {"message": "Not found"}, 400
 
+
 class PostList(Resource):
     def get(self):
         session = SessionLocal()
-        posts = session.query(models.Post).options(joinedload(models.Post.author),
-            joinedload(models.Post.game),
-            joinedload(models.Post.comments).joinedload(models.Comment.author)).all()
+        posts = (
+            session.query(models.Post)
+            .options(
+                joinedload(models.Post.author),
+                joinedload(models.Post.game),
+                joinedload(models.Post.comments).joinedload(models.Comment.author),
+            )
+            .all()
+        )
         session.close()
         return post_list_schema.dump(posts), 200
 
@@ -58,6 +65,7 @@ class PostList(Resource):
         session.close()
 
         return return_data, 201
+
 
 class PostComments(Resource):
     @jwt_required()

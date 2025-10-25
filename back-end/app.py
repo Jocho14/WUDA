@@ -13,6 +13,7 @@ jwt = JWTManager(app)
 
 init_db()
 
+
 class Liveness(Resource):
     def get(self):
         return {"status": "I am alive"}, 200
