@@ -33,6 +33,9 @@ PORT=5432
 # Secret key for JWT
 JWT_KEY=your_secret_jwt_key
 
+# Port where the backend will run (default is 5000)
+APP_PORT=5000
+
 ```
 
 3. In order to run app use command
