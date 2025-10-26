@@ -2,9 +2,9 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   build-test:
@@ -13,6 +13,10 @@ jobs:
     env:
       REGISTRY: ghcr.io
       IMAGE_NAME: ${{ github.repository }}
+      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      JWT_KEY: ${{ secrets.JWT_KEY }}
 
     steps:
       - name: Checkout code
@@ -21,7 +25,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       - name: Install dependencies
         run: |
@@ -43,6 +47,9 @@ jobs:
           flake8 back-end --count --max-complexity=10 --max-line-length=120 --statistics
           echo "Linting frontend..."
           flake8 front-end --count --max-complexity=10 --max-line-length=120 --statistics
+
+      - name: Debug env vars
+        run: printenv | grep POSTGRES || echo "No POSTGRES vars found"
 
       - name: Run tests
         run: |
