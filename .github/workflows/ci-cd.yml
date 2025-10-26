@@ -73,13 +73,13 @@ jobs:
           IMAGE_TAG=${GITHUB_SHA::7}
 
           echo "Building and pushing backend"
-          docker build -f back-end/Dockerfile -t $REGISTRY/$IMAGE_NAME_LC-backend:$IMAGE_TAG back-end
-          docker push $REGISTRY/$IMAGE_NAME_LC-backend:$IMAGE_TAG
-          docker tag $REGISTRY/$IMAGE_NAME_LC-backend:$IMAGE_TAG $REGISTRY/$IMAGE_NAME_LC-backend:latest
-          docker push $REGISTRY/$IMAGE_NAME_LC-backend:latest
+          docker build -f back-end/Dockerfile -t $REGISTRY/$IMAGE_NAME_LC/backend:$IMAGE_TAG back-end
+          docker push $REGISTRY/$IMAGE_NAME_LC/backend:$IMAGE_TAG
+          docker tag $REGISTRY/$IMAGE_NAME_LC/backend:$IMAGE_TAG $REGISTRY/$IMAGE_NAME_LC/backend:latest
+          docker push $REGISTRY/$IMAGE_NAME_LC/backend:latest
 
           echo "Building and pushing frontend"
-          docker build -f front-end/Dockerfile -t $REGISTRY/$IMAGE_NAME_LC-frontend:$IMAGE_TAG front-end
-          docker push $REGISTRY/$IMAGE_NAME_LC-frontend:$IMAGE_TAG
-          docker tag $REGISTRY/$IMAGE_NAME_LC-frontend:$IMAGE_TAG $REGISTRY/$IMAGE_NAME_LC-frontend:latest
-          docker push $REGISTRY/$IMAGE_NAME_LC-frontend:latest
+          docker build -f front-end/Dockerfile -t $REGISTRY/$IMAGE_NAME_LC/frontend:$IMAGE_TAG front-end
+          docker push $REGISTRY/$IMAGE_NAME_LC/frontend:$IMAGE_TAG
+          docker tag $REGISTRY/$IMAGE_NAME_LC/frontend:$IMAGE_TAG $REGISTRY/$IMAGE_NAME_LC/frontend:latest
+          docker push $REGISTRY/$IMAGE_NAME_LC/frontend:latest
