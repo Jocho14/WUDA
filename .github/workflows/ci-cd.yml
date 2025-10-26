@@ -1,0 +1,85 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    env:
+      REGISTRY: ghcr.io
+      IMAGE_NAME: ${{ github.repository }}
+      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      JWT_KEY: ${{ secrets.JWT_KEY }}
+      SECRET_KEY: ${{ secrets.JWT_KEY }}
+      GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install bandit flake8 pytest
+          if [ -f back-end/requirements.txt ]; then pip install -r back-end/requirements.txt; fi
+          if [ -f front-end/requirements.txt ]; then pip install -r front-end/requirements.txt; fi
+
+      - name: Run vulnerability scan
+        run: |
+          echo "Scanning backend..."
+          bandit -r back-end -ll || true
+          echo "Scanning frontend..."
+          bandit -r front-end -ll || true
+
+      - name: Run code linting
+        run: |
+          echo "Linting backend..."
+          flake8 back-end --count --max-complexity=10 --max-line-length=120 --statistics
+          echo "Linting frontend..."
+          flake8 front-end --count --max-complexity=10 --max-line-length=120 --statistics
+
+      - name: Debug env vars
+        run: printenv | grep POSTGRES || echo "No POSTGRES vars found"
+
+      - name: Run tests
+        run: |
+          pytest back-end --maxfail=1 --disable-warnings -q
+          pytest front-end --maxfail=1 --disable-warnings -q
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ env.GHCR_TOKEN }}
+
+      - name: Set lowercase image name
+        run: echo "IMAGE_NAME_LC=$(echo ${{ env.IMAGE_NAME }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: Build and push Docker image
+        run: |
+          IMAGE_TAG=${GITHUB_SHA::7}
+
+          echo "Building and pushing backend"
+          docker build -f back-end/Dockerfile -t $REGISTRY/$IMAGE_NAME_LC/backend:$IMAGE_TAG back-end
+          docker push $REGISTRY/$IMAGE_NAME_LC/backend:$IMAGE_TAG
+          docker tag $REGISTRY/$IMAGE_NAME_LC/backend:$IMAGE_TAG $REGISTRY/$IMAGE_NAME_LC/backend:latest
+          docker push $REGISTRY/$IMAGE_NAME_LC/backend:latest
+
+          echo "Building and pushing frontend"
+          docker build -f front-end/Dockerfile -t $REGISTRY/$IMAGE_NAME_LC/frontend:$IMAGE_TAG front-end
+          docker push $REGISTRY/$IMAGE_NAME_LC/frontend:$IMAGE_TAG
+          docker tag $REGISTRY/$IMAGE_NAME_LC/frontend:$IMAGE_TAG $REGISTRY/$IMAGE_NAME_LC/frontend:latest
+          docker push $REGISTRY/$IMAGE_NAME_LC/frontend:latest
