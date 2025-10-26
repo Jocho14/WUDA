@@ -7,6 +7,7 @@ from flask_jwt_extended import create_access_token
 from datetime import timedelta
 from logger import LOGGER
 
+
 class RegisterUser(Resource):
     def get(self):
         data = request.get_json()
@@ -14,7 +15,7 @@ class RegisterUser(Resource):
             return {"message": "Sent empty request"}, 400
         try:
             data = check_username.load(data)
-        except ValidationError as error:
+        except ValidationError:
             return {"message": "Wrong request"}, 400
         LOGGER.info("fetching username")
         session = SessionLocal()
@@ -24,7 +25,7 @@ class RegisterUser(Resource):
         session.close()
         LOGGER.info("returning username")
         if user:
-            return { "username": user.username}, 200
+            return {"username": user.username}, 200
         return {"message": "User not found"}, 404
 
     def post(self):
@@ -34,7 +35,7 @@ class RegisterUser(Resource):
 
         try:
             data = register_schema.load(data)
-        except ValidationError as error:
+        except ValidationError:
             return {"message": "Invalid request"}, 400
         new_user = models.User(**data)
         LOGGER.info("Checking if username exist")
@@ -51,6 +52,7 @@ class RegisterUser(Resource):
         session.close()
         return {"message": "Created new user"}, 201
 
+
 class LoginUser(Resource):
     def post(self):
         data = request.get_json()
@@ -58,7 +60,7 @@ class LoginUser(Resource):
             return {"message": "Sent empty request"}, 400
         try:
             data = login_schema.load(data)
-        except ValidationError as error:
+        except ValidationError:
             return {"message": "Wrong request"}, 400
         LOGGER.info("Validating input")
         session = SessionLocal()
