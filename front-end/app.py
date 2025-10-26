@@ -1,18 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
-from utils.api_calls import (
-    fetch_post,
-    NewComment,
-    fetch_posts,
-    NewPost,
-    add_post,
-    add_comment,
-    Login,
-    login_user,
-    register_user,
-    RegisterUser,
-    add_game_req,
-    get_games_req,
-)
+from utils.api_calls import fetch_post, NewComment, fetch_posts, NewPost, add_post, add_comment, Login, login_user, register_user, RegisterUser, add_game_req, get_games_req
 from pydantic import ValidationError
 from settings import SECRET_KEY, APP_PORT, APP_HOST
 import logging
@@ -24,22 +11,23 @@ logging.basicConfig(
     filename="app_errors.log",
 )
 logger = logging.getLogger(__name__)
+
+
+
+
+
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
-
-
 @app.context_processor
 def inject_user_info():
     if session.get("login", None):
         return dict(curr_user=session['login'])
     return dict(curr_user=None)
 
-
 @app.errorhandler(500)
 def internal_server_error(e):
     logger.exception("Internal server error: %s", e)
     return render_template("500.html"), 500
-
 
 @app.route("/game/<int:game_id>")
 def game_detail(game_id):
@@ -69,7 +57,6 @@ def index():
     session['games'] = games
     return render_template('index.html', games=games)
 
-
 @app.route("/forum")
 def forum():
     posts = fetch_posts()
@@ -87,13 +74,11 @@ def forum():
         use_filter=use_filter
     )
 
-
 @app.route("/forum/<int:post_id>")
 def post_detail(post_id):
     post = fetch_post(post_id)
     print(post)
     return render_template("forum/post_detail.html", post=post)
-
 
 @app.route("/forum/<int:post_id>/", methods=["POST"])
 def post_comment(post_id):
@@ -102,20 +87,21 @@ def post_comment(post_id):
     return redirect(url_for("post_detail", post_id=post_id))
 
 
+
 @app.route("/forum/new", methods=["POST", "GET"])
 def new_post():
 
     if request.method == "POST":
-        form_data = request.form.to_dict()
-        try:
-            post_data = NewPost(**form_data)
-            if add_post(post_data):
-                return redirect(url_for("forum"))
-            else:
-                return render_template("forum/post_form.html", games=session['games'])
-        except ValidationError as e:
-            flash("❌ Błąd walidacji: " + str(e), "error")
-            return render_template("forum/post_form.html", form=form_data)
+            form_data = request.form.to_dict()
+            try:
+                post_data = NewPost(**form_data)
+                if add_post(post_data):
+                    return redirect(url_for("forum"))
+                else:
+                    return render_template("forum/post_form.html", games=session['games'])
+            except ValidationError as e:
+                flash("❌ Błąd walidacji: " + str(e), "error")
+                return render_template("forum/post_form.html", form=form_data)
     return render_template("forum/post_form.html", games=session['games'])
 
 
@@ -133,7 +119,6 @@ def register():
             flash("Nie udało się utworzyć użytkownika", "error")
     return render_template('auth/register.html')
 
-
 # @app.route("/")
 @app.route("/auth/login", methods=["GET", "POST"])
 def login():
@@ -150,7 +135,6 @@ def login():
             flash("Błedne dane logownia", "error")
     return render_template('auth/login.html')
 
-
 @app.route("/auth/logout")
 def logout():
     session.pop("login", None)
@@ -158,8 +142,7 @@ def logout():
     flash("Wylogowano", "success")
     return redirect("/")
 
-
-if __name__ == "__main__":
+if __name__ =="__main__":
     app.run(
         host=APP_HOST,
         port=APP_PORT

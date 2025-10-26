@@ -2,12 +2,10 @@ import pytest
 from unittest.mock import patch
 from app import app, RegisterUser
 
-
 @pytest.fixture
 def client():
     with app.test_client() as client:
         yield client
-
 
 # -------------------
 # GET testy
@@ -18,7 +16,6 @@ def test_index(mock_get_games, client):
     response = client.get("/")
     assert response.status_code == 200
     assert b"Test Game" in response.data
-
 
 @patch("app.get_games_req")
 def test_game_detail(mock_get_game, client):
@@ -32,11 +29,9 @@ def test_login_get(client):
     response = client.get("/auth/login")
     assert response.status_code == 200
 
-
 def test_register_get(client):
     response = client.get("/auth/register")
     assert response.status_code == 200
-
 
 @patch("app.register_user")
 @patch("app.RegisterUser.model_validate")
