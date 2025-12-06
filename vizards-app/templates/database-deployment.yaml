@@ -1,0 +1,33 @@
+{{- if .Values.database.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vizards-database
+  labels:
+    app: database
+spec:
+  replicas: {{.Values.database.replicaCount}}
+  selector:
+    matchLabels:
+      app: database
+  template:
+    metadata:
+      labels:
+        app: database
+    spec:
+      containers:
+        - name: postgres
+          image: "{{ .Values.database.image.repository }}:{{ .Values.database.image.tag }}"
+          env:
+            - name: POSTGRES_DB
+              value: {{.Values.database.env.POSTGRES_DB}}
+            - name: POSTGRES_USER
+              value: {{.Values.database.env.POSTGRES_USER}}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: vizards-db-secret
+                  key: password
+          ports:
+            - containerPort: 5432
+{{- end}}

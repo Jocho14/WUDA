@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vizards-backend
+  labels:
+    app: backend
+spec:
+  replicas: {{.Values.backend.replicaCount}}
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
+          ports:
+            - containerPort: {{.Values.backend.service.port}}
+          env:
+            - name: DB_HOST
+              value: {{.Values.backend.env.DATABASE_HOST}}
