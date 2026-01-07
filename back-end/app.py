@@ -12,7 +12,7 @@ api = Api(app)
 app.config['JWT_SECRET_KEY'] = JWT_KEY
 jwt = JWTManager(app)
 
-configure_monitoring(app, db_engine=engine) 
+configure_monitoring(app, db_engine=engine)
 
 init_db()
 

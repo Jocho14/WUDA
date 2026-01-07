@@ -1,7 +1,7 @@
 backend:
   image:
-    repository: ealen/echo-server
-    tag: "latest"
+    repository: "vizards-backend"
+    tag: "v1"
   replicaCount: 1
   service:
     port: 80
@@ -14,12 +14,12 @@ backend:
 
 frontend:
   image:
-    repository: "nginx"
-    tag: "1.23"
+    repository: "vizards-frontend"
+    tag: "v1"
   replicaCount: 2
   service:
     type: NodePort
-    port: 80
+    port: 8000
 
 database:
   enabled: true
@@ -31,3 +31,13 @@ database:
     POSTGRES_DB: "wudadb"
     POSTGRES_USER: "postgres"
     POSTGRES_PASSWORD: "change-me"
+
+monitoring:
+  enabled: true
+  otel:
+    image: otel/opentelemetry-collector-contrib:latest
+  prometheus:
+    image: prom/prometheus:latest
+  grafana:
+    image: grafana/grafana:latest
+    adminPassword: "admin"

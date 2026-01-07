@@ -17,8 +17,26 @@ spec:
       containers:
         - name: backend
           image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: {{.Values.backend.service.port}}
           env:
-            - name: DB_HOST
+            - name: POSTGRES_HOST
               value: {{.Values.backend.env.DATABASE_HOST}}
+            - name: POSTGRES_PORT
+              value: "{{.Values.backend.env.DATABASE_PORT}}"
+            - name: POSTGRES_DB
+              value: {{.Values.backend.env.DATABASE_NAME}}
+            - name: POSTGRES_USER
+              value: {{.Values.backend.env.DATABASE_USER}}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: vizards-db-secret
+                  key: password
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://vizards-otel-collector:4317"
+            - name: APP_PORT
+              value: "{{ .Values.backend.service.port }}"
+            - name: APP_HOST
+              value: "0.0.0.0"

@@ -27,7 +27,7 @@ def configure_monitoring(app, db_engine=None):
         "http://localhost:4317"
     )
 
-    # Konfiguracja sledzenia 
+    # Konfiguracja sledzenia
     tracer_provider = TracerProvider(resource=resource)
 
     trace_exporter = OTLPSpanExporter(

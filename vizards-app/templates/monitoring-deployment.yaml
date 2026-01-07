@@ -1,0 +1,105 @@
+{{- if .Values.monitoring.enabled }}
+# --- OpenTelemetry Collector ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vizards-otel-collector
+  labels:
+    app: otel-collector
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: otel-collector
+  template:
+    metadata:
+      labels:
+        app: otel-collector
+    spec:
+      containers:
+        - name: otel-collector
+          image: {{ .Values.monitoring.otel.image }}
+          args: ["--config=/etc/otel/otel-collector-config.yaml"]
+          ports:
+            - containerPort: 4317 # OTLP gRPC
+            - containerPort: 4318 # OTLP HTTP
+            - containerPort: 8889 # Prometheus exporter
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/otel
+      volumes:
+        - name: config-volume
+          configMap:
+            name: monitoring-config
+            items:
+              - key: otel-collector-config.yaml
+                path: otel-collector-config.yaml
+
+---
+# --- Prometheus ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vizards-prometheus
+  labels:
+    app: prometheus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus
+  template:
+    metadata:
+      labels:
+        app: prometheus
+    spec:
+      containers:
+        - name: prometheus
+          image: {{ .Values.monitoring.prometheus.image }}
+          ports:
+            - containerPort: 9090
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/prometheus/prometheus.yml
+              subPath: prometheus.yaml
+      volumes:
+        - name: config-volume
+          configMap:
+            name: monitoring-config
+
+---
+# --- Grafana ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vizards-grafana
+  labels:
+    app: grafana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      containers:
+        - name: grafana
+          image: {{ .Values.monitoring.grafana.image }}
+          ports:
+            - containerPort: 3000
+          env:
+            - name: GF_SECURITY_ADMIN_PASSWORD
+              value: {{ .Values.monitoring.grafana.adminPassword }}
+          volumeMounts:
+            # Automatyczne dodanie Prometheusa jako źródła danych
+            - name: config-volume
+              mountPath: /etc/grafana/provisioning/datasources/datasource.yaml
+              subPath: grafana-datasource.yaml
+      volumes:
+        - name: config-volume
+          configMap:
+            name: monitoring-config
+{{- end }}

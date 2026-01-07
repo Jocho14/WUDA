@@ -1,0 +1,48 @@
+{{- if .Values.monitoring.enabled }}
+# Serwis dla OTEL Collector
+apiVersion: v1
+kind: Service
+metadata:
+  name: vizards-otel-collector
+spec:
+  selector:
+    app: otel-collector
+  ports:
+    - name: grpc
+      port: 4317
+      targetPort: 4317
+    - name: http
+      port: 4318
+      targetPort: 4318
+    - name: prometheus
+      port: 8889
+      targetPort: 8889
+
+---
+# Serwis dla Prometheusa
+apiVersion: v1
+kind: Service
+metadata:
+  name: vizards-prometheus
+spec:
+  selector:
+    app: prometheus
+  ports:
+    - port: 9090
+      targetPort: 9090
+
+---
+# Serwis dla Grafany (NodePort, pozwala na dostep z przeglo)
+apiVersion: v1
+kind: Service
+metadata:
+  name: vizards-grafana
+spec:
+  type: NodePort
+  selector:
+    app: grafana
+  ports:
+    - port: 3000
+      targetPort: 3000
+      nodePort: 32300 # Sztywny port, ułatwia dostęp w Dockerze
+{{- end }}

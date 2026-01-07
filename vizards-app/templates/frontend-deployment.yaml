@@ -17,8 +17,14 @@ spec:
       containers:
         - name: frontend
           image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag }}"
+          args: ["flask", "run", "--host=0.0.0.0", "--port=8000"]
           ports:
             - containerPort: {{.Values.frontend.service.port}}
+          env:
+            - name: BACKEND_HOSTNAME
+              value: "vizards-backend"
+            - name: BACKEND_PORT
+              value: "{{ .Values.backend.service.port }}"
           livenessProbe:
             httpGet:
               path: /
