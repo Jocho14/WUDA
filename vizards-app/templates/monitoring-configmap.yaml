@@ -1,0 +1,50 @@
+{{- if .Values.monitoring.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: monitoring-config
+data:
+  otel-collector-config.yaml: |
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: "0.0.0.0:4317"
+          http:
+            endpoint: "0.0.0.0:4318"
+    processors:
+      batch:
+    exporters:
+      prometheus:
+        endpoint: "0.0.0.0:8889"
+        namespace: "wuda_backend"
+      debug:
+        verbosity: detailed
+    service:
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [batch]
+          exporters: [debug]
+        metrics:
+          receivers: [otlp]
+          processors: [batch]
+          exporters: [prometheus, debug]
+
+  prometheus.yaml: |
+    global:
+      scrape_interval: 5s
+    scrape_configs:
+      - job_name: 'otel-collector'
+        static_configs:
+          - targets: ['vizards-otel-collector:8889']
+
+  grafana-datasource.yaml: |
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        access: proxy
+        url: http://vizards-prometheus:9090
+        isDefault: true
+{{- end }}

@@ -1,15 +1,18 @@
 from flask import Flask
 from flask_restful import Api, Resource
-from database import init_db, check_database
+from database import init_db, check_database, engine
 from resources.posts import PostList, PostDetails, PostComments
 from resources.auth import RegisterUser, LoginUser
 from resources.game import GameList
 from settings import JWT_KEY, APP_PORT, APP_HOST
 from flask_jwt_extended import JWTManager
+from monitoring import configure_monitoring
 app = Flask(__name__)
 api = Api(app)
 app.config['JWT_SECRET_KEY'] = JWT_KEY
 jwt = JWTManager(app)
+
+configure_monitoring(app, db_engine=engine)
 
 init_db()
 
